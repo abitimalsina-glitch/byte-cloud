@@ -1,7 +1,23 @@
-ByteCloud
-ByteCloud.Api
-.DS_Store
-node_modules/
-.next/
+# .NET
+**/bin/
+**/obj/
+
+# Visual Studio / Rider
+.vs/
+.idea/
+
+# User-specific files
+*.user
+*.suo
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+
+# Environment / secrets
 .env
-.env.local
+.env.*
+!.env.example
+
+# macOS
+.DS_Store
