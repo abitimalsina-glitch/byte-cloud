@@ -1,45 +1,58 @@
+// Imports the ByteCloud.Data namespace so we can use ByteCloudDbContext
+using ByteCloud.Data;
+
+// Imports EF Core functionality such as UseSqlite()
+using Microsoft.EntityFrameworkCore;
+
 // Creates the ASP.NET Core application builder
 var builder = WebApplication.CreateBuilder(args);
 
-// Registers MVC controllers and views
+// Registers MVC controllers and Razor views with the application
 builder.Services.AddControllersWithViews();
 
-// Builds the application
+// Registers ByteCloudDbContext with ASP.NET Core's dependency injection system
+// and configures EF Core to use SQLite with the bytecloud.db database file.
+builder.Services.AddDbContext<ByteCloudDbContext>(options => 
+options.UseSqlite("Data Source=bytecloud.db"));
+
+// Builds the configured ASP.NET Core application
 var app = builder.Build();
 
-// Configure the request pipeline
+// Configures the HTTP request pipeline
 if (!app.Environment.IsDevelopment())
 {
-    // Shows a friendly error page in production
+    // Shows a friendly error page when the application is running in production
     app.UseExceptionHandler("/Home/Error");
 
-    // Forces browsers to use HTTPS
+    // Tells browsers to use HTTPS for future requests
     app.UseHsts();
 }
 
 // Redirects HTTP requests to HTTPS
 app.UseHttpsRedirection();
 
-// Enables URL routing
+// Enables URL routing so requests can be matched to controllers and endpoints
 app.UseRouting();
 
-// Enables authorization checks
+// Enables authorization checks for protected resources
 app.UseAuthorization();
 
-// Enables static files like CSS and JavaScript
+// Enables static files such as CSS, JavaScript, and images
 app.MapStaticAssets();
 
-// Defines the default controller route
+// Defines the default MVC controller route
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}"
 )
 .WithStaticAssets();
 
-app.MapGet("/health", () =>
+// Creates a simple health-check endpoint
+// Visiting /health returns "Server is running"
+app.MapGet("/", () =>
 {
     return "Server is running";
 });
 
-// Starts the application
+// Starts the ASP.NET Core application and begins listening for requests
 app.Run();

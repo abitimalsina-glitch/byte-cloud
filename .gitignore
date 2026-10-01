@@ -21,3 +21,6 @@ frontend/dist/
 
 # macOS
 .DS_Store
+
+#extras
+notes
