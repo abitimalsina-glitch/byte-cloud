@@ -1,19 +1,19 @@
 import { useState } from "react";
 import { Link } from 'react-router-dom';
 
-export default function LoginForm() {
+export default function RegisterForm() {
     const [isOn, setIsOn] = useState(false);
 
     function togglePassword() {
         setIsOn(!isOn);
     }
     return (
-        <form className="w-full max-w-sm mt-12 sm:mt-14 md:mt-16 xl:mt-20">
+        <form className="w-full max-w-sm mt-12 sm:mt-14 md:mt-16 xl:mt-14">
             <h1 className="text-[#458af1] font-bold text-3xl md:text-4xl">
-            Welcome Back
+            Register your account
             </h1>
             <p className="text-[#458af1] mt-1 text-sm md:text-base">
-            Please enter your details to continue
+            Please enter your details to register your account
             </p>
             <div className="mt-6 flex flex-col">
                 <label htmlFor="email">Email</label>
@@ -22,6 +22,15 @@ export default function LoginForm() {
                     type="email"
                     className="w-full mt-2 border border-blue-300 rounded-md px-3 py-2.5 text-black outline-none focus:border-[#458af1]"
                     placeholder="Enter your Email"/>
+            </div>
+
+            <div className="mt-5 flex flex-col">
+                <label htmlFor="username">Username</label>
+                <input
+                    id="email"
+                    type="email"
+                    className="w-full mt-2 border border-blue-300 rounded-md px-3 py-2.5 text-black outline-none focus:border-[#458af1]"
+                    placeholder="Enter your Username"/>
             </div>
             
             <div className="mt-5 flex flex-col">
@@ -46,20 +55,16 @@ export default function LoginForm() {
                 </button>
             </div>
             
-            <div className="mt-2 text-[#458af1] text-sm">
-                <p>Forgot your password?</p>
-            </div>
-            
             <button
                 type="submit"
                 className="w-full bg-[#458af1] hover:bg-blue-400 active:bg-blue-500 rounded-lg text-center font-bold mt-5 py-2.5
                 text-white transition-colors">
-                Sign In
+                Sign Up
             </button>
 
             <div className="text-center mt-3">
-            <Link to="/register" className="text-[#458af1] hover:underline">
-            Don't have an account? Sign Up
+            <Link to="/login" className="text-[#458af1] hover:underline">
+            Already have an account? Sign In
             </Link>
             </div>
         </form>
