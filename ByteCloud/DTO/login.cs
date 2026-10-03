@@ -1,4 +1,4 @@
-namespace ByteCloud.DTO;
+namespace Login.DTO;
 
 public class LoginRequest
 {

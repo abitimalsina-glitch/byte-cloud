@@ -1,6 +1,10 @@
 // Imports the ByteCloud.Data namespace so we can use ByteCloudDbContext
 using ByteCloud.Data;
 
+// Imports the ByteCloud.Models namespace so we can use User
+using ByteCloud.Models;
+
+// Imports the PasswordService namespace so we can use PasswordServices
 using PasswordService.Services;
 
 // Imports EF Core functionality such as UseSqlite()
@@ -14,9 +18,11 @@ builder.Services.AddControllersWithViews();
 
 // Registers ByteCloudDbContext with ASP.NET Core's dependency injection system
 // and configures EF Core to use SQLite with the bytecloud.db database file.
-builder.Services.AddDbContext<ByteCloudDbContext>(options => 
-options.UseSqlite("Data Source=bytecloud.db"));
+builder.Services.AddDbContext<ByteCloudDbContext>(
+    options => options.UseSqlite("Data Source=bytecloud.db")
+);
 
+// Registers PasswordServices with ASP.NET Core's dependency injection system
 builder.Services.AddScoped<PasswordServices>();
 
 // Builds the configured ASP.NET Core application
@@ -52,7 +58,7 @@ app.MapControllerRoute(
 .WithStaticAssets();
 
 // Creates a simple health-check endpoint
-// Visiting /health returns "Server is running"
+// Visiting / returns "Server is running"
 app.MapGet("/", () =>
 {
     return "Server is running";

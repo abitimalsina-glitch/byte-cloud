@@ -1,6 +1,7 @@
 using ByteCloud.Data;
 using ByteCloud.Models;
-using ByteCloud.DTO;
+using Login.DTO;
+using Register.DTO;
 using Microsoft.AspNetCore.Mvc;
 using PasswordService.Services;
 
@@ -17,7 +18,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("login")]
-    public string Login(LoginRequest request)
+    public string Login(Login.DTO.LoginRequest request)
     {
         User? user = context.Users.FirstOrDefault(user => user.Email == request.Email);
 
@@ -34,5 +35,38 @@ public class AuthController : ControllerBase
         }
 
         return user.Username;
+    }
+
+    [HttpPost("register")]
+    public string Register(Register.DTO.RegisterRequest request)
+    {
+        User? existingUser = context.Users.FirstOrDefault(user => user.Email == request.Email);
+
+        if (existingUser != null)
+        {
+            return "Email Already Registered";
+        }
+
+        User? existingUsername = context.Users.FirstOrDefault(user => user.Username == request.Username);
+        
+        if (existingUsername != null)
+        {
+            return "Username Already Taken";
+        }
+        
+        User user = new User
+        {
+            Email = request.Email,
+            Username = request.Username,
+            PasswordHash = passwordServices.HashPassword(new User(), request.Password),
+            CreatedAt = DateTime.UtcNow,
+            StorageLimit = 10737418240,
+            StorageUsed = 0
+        };
+
+        context.Users.Add(user);
+        context.SaveChanges();
+
+        return "User Registered Successfully";
     }
 }

@@ -27,3 +27,5 @@ notes
 
 #database
 bytecloud.db
+bytecloud.db-shm
+bytecloud.db-wal
