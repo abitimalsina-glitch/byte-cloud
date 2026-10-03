@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
-[Route("api/users")]
+[Route("/api/users")]
 public class UserController : ControllerBase
 {
     [HttpGet]

@@ -1,6 +1,8 @@
 // Imports the ByteCloud.Data namespace so we can use ByteCloudDbContext
 using ByteCloud.Data;
 
+using PasswordService.Services;
+
 // Imports EF Core functionality such as UseSqlite()
 using Microsoft.EntityFrameworkCore;
 
@@ -14,6 +16,8 @@ builder.Services.AddControllersWithViews();
 // and configures EF Core to use SQLite with the bytecloud.db database file.
 builder.Services.AddDbContext<ByteCloudDbContext>(options => 
 options.UseSqlite("Data Source=bytecloud.db"));
+
+builder.Services.AddScoped<PasswordServices>();
 
 // Builds the configured ASP.NET Core application
 var app = builder.Build();

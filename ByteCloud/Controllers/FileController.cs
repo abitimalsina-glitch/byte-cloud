@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
-[Route("api/files")]
+[Route("/api/files")]
 public class FileController : ControllerBase
 {
     
