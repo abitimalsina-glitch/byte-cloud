@@ -1,4 +1,4 @@
-namespace ByteCloud.Models;
+namespace Users.Models;
 public class User
 {
     public int Id { get; set; }
@@ -10,5 +10,4 @@ public class User
     public DateTime CreatedAt { get; set; }
     public long StorageLimit { get; set; }
     public long StorageUsed { get; set; }
-    public bool EmailVerified { get; set; }
 }

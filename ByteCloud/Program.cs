@@ -1,8 +1,8 @@
 // Imports the ByteCloud.Data namespace so we can use ByteCloudDbContext
 using ByteCloud.Data;
 
-// Imports the ByteCloud.Models namespace so we can use User
-using ByteCloud.Models;
+// Imports the Users.Models namespace so we can use User
+using Users.Models;
 
 // Imports the PasswordService namespace so we can use PasswordServices
 using PasswordService.Services;

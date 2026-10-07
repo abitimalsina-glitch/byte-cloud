@@ -1,4 +1,4 @@
-using ByteCloud.Models;
+using Users.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace ByteCloud.Data;

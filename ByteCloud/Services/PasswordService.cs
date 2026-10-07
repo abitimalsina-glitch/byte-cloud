@@ -1,4 +1,4 @@
-using ByteCloud.Models;
+using Users.Models;
 using Microsoft.AspNetCore.Identity;
 
 namespace PasswordService.Services;
