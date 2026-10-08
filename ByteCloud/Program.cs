@@ -1,5 +1,6 @@
 // Imports the ByteCloud.Data namespace so we can use ByteCloudDbContext
 using ByteCloud.Data;
+using RateLimiting.Configuration;
 
 // Imports the Users.Models namespace so we can use User
 using Users.Models;
@@ -25,6 +26,8 @@ builder.Services.AddDbContext<ByteCloudDbContext>(
 // Registers PasswordServices with ASP.NET Core's dependency injection system
 builder.Services.AddScoped<PasswordServices>();
 
+builder.Services.AddByteCloudRateLimiting();
+
 // Builds the configured ASP.NET Core application
 var app = builder.Build();
 
@@ -43,6 +46,9 @@ app.UseHttpsRedirection();
 
 // Enables URL routing so requests can be matched to controllers and endpoints
 app.UseRouting();
+
+// Enables ASP.NET Core's built-in rate limiting middleware.
+app.UseRateLimiter();
 
 // Enables authorization checks for protected resources
 app.UseAuthorization();

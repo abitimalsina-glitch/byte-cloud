@@ -4,6 +4,7 @@ using Login.DTO;
 using Register.DTO;
 using Microsoft.AspNetCore.Mvc;
 using PasswordService.Services;
+using Microsoft.AspNetCore.RateLimiting;
 
 [ApiController]
 [Route("/api/auth")]
@@ -21,7 +22,8 @@ public class AuthController : ControllerBase
         this.context = context;
         this.passwordServices = passwordServices;
     }
-
+    
+    [EnableRateLimiting("login")]
     [HttpPost("login")]
     public IActionResult Login(LoginRequest request)
     {
