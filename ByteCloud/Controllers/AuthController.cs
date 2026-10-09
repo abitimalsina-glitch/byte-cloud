@@ -4,6 +4,7 @@ using Login.DTO;
 using Register.DTO;
 using Microsoft.AspNetCore.Mvc;
 using PasswordService.Services;
+using Normalizer.Services;
 using Microsoft.AspNetCore.RateLimiting;
 
 [ApiController]
@@ -22,15 +23,17 @@ public class AuthController : ControllerBase
         this.context = context;
         this.passwordServices = passwordServices;
     }
-    
+
     [EnableRateLimiting("login")]
     [HttpPost("login")]
     public IActionResult Login(LoginRequest request)
     {
-        // Search the database for a user with the email
-        // provided in the login request.
+        // Normalize the email so "Bob@X.com " matches the stored "bob@x.com".
+        string email = AccountNormalizer.NormalizeEmail(request.Email);
+
+        // Search the database for a user with the normalized email.
         User? user = context.Users.FirstOrDefault(
-            user => user.Email == request.Email
+            user => user.Email == email
         );
 
         // If no user was found, return a generic error.
@@ -59,17 +62,22 @@ public class AuthController : ControllerBase
         // The credentials are correct.
         // return the username.
         // Later, this will be replaced with an authentication
-        // mechanism such as a cookie or JWT.
+        // mechanism such as a cookie 
         return Ok(user.Username);
     }
 
+    [EnableRateLimiting("register")]
     [HttpPost("register")]
     public IActionResult Register(RegisterRequest request)
     {
+        // Normalize once, then use the same value for the
+        // duplicate check and for what gets stored.
+        string email = AccountNormalizer.NormalizeEmail(request.Email);
+
         // Check whether the requested email is already
         // associated with an existing account.
         User? existingUser = context.Users.FirstOrDefault(
-            user => user.Email == request.Email
+            user => user.Email == email
         );
 
         // Prevent multiple accounts from using the same email.
@@ -94,7 +102,7 @@ public class AuthController : ControllerBase
         // The password is hashed before it is stored.
         User user = new User
         {
-            Email = request.Email,
+            Email = email,
             Username = request.Username,
 
             // Never store the user's plain-text password.

@@ -6,48 +6,55 @@ namespace RateLimiting.Configuration;
 
 public static class RateLimitingConfig
 {
-    // Extension method used to register ByteCloud's rate-limiting
-    // configuration with ASP.NET Core's dependency injection system.
+    // Registers ByteCloud's rate-limiting configuration.
     public static IServiceCollection AddByteCloudRateLimiting(
         this IServiceCollection services)
     {
-        // Registers ASP.NET Core's built-in rate-limiting service.
+        // Register ASP.NET Core's built-in rate-limiting service.
         services.AddRateLimiter(options =>
         {
-            // Creates a rate-limiting policy named "login".
-            // This policy can later be applied to specific endpoints.
+            // Rate-limit the login endpoint.
             options.AddPolicy("login", httpContext =>
             {
-                // Get the IP address of the client making the request.
-                // Each IP address will have its own rate-limit bucket.
+                // Get the client's IP address.
                 var ipAddress =
                     httpContext.Connection.RemoteIpAddress?.ToString()
                     ?? "unknown";
 
-                // Create a fixed-window rate limiter for this IP address.
+                // Create an independent rate limiter for each IP.
                 return RateLimitPartition.GetFixedWindowLimiter(
-                    // Use the client's IP address as the partition key.
-                    // This gives each IP address its own independent limit.
                     partitionKey: ipAddress,
-
-                    // Configure the rate limiter for this partition.
                     factory: _ => new FixedWindowRateLimiterOptions
                     {
-                        // Allow a maximum of 5 requests in the window.
+                        // Allow 5 requests per 2-minute window.
                         PermitLimit = 5,
-
-                        // Reset the request limit every 1 minute.
                         Window = TimeSpan.FromMinutes(2),
 
-                        // Do not place additional requests in a queue.
-                        // Requests above the limit are rejected immediately.
+                        // Reject excess requests immediately.
+                        QueueLimit = 0
+                    });
+            });
+
+            // Rate-limit the registration endpoint.
+            options.AddPolicy("register", httpContext =>
+            {
+                var ipAddress =
+                    httpContext.Connection.RemoteIpAddress?.ToString()
+                    ?? "unknown";
+
+                return RateLimitPartition.GetFixedWindowLimiter(
+                    partitionKey: ipAddress,
+                    factory: _ => new FixedWindowRateLimiterOptions
+                    {
+                        // Allow 5 registration requests per 2 minutes.
+                        PermitLimit = 5,
+                        Window = TimeSpan.FromMinutes(3),
                         QueueLimit = 0
                     });
             });
         });
 
-        // Return the service collection so additional
-        // service registrations can continue to be chained.
+        // Return services to support method chaining.
         return services;
     }
 }
