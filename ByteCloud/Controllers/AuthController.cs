@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Mvc;
 using PasswordService.Services;
 using Normalizer.Services;
 using Microsoft.AspNetCore.RateLimiting;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 [ApiController]
 [Route("/api/auth")]
@@ -68,7 +70,7 @@ public class AuthController : ControllerBase
 
     [EnableRateLimiting("register")]
     [HttpPost("register")]
-    public IActionResult Register(RegisterRequest request)
+    public async Task<IActionResult> Register(RegisterRequest request)
     {
         // Normalize once, then use the same value for the
         // duplicate check and for what gets stored.
@@ -124,10 +126,15 @@ public class AuthController : ControllerBase
         // Add the new user to EF Core's change tracker.
         context.Users.Add(user);
 
-        // Save the new user to the database.
-        context.SaveChanges();
-
-        // Return a successful HTTP response.
+        try
+        {
+            await context.SaveChangesAsync();
+        }
+        catch (DbUpdateException)
+        {
+            return Conflict("Email or username already taken");
+        }
+        
         return Ok("User Registered Successfully");
     }
 }

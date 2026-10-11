@@ -46,7 +46,7 @@ public static class RateLimitingConfig
                     partitionKey: ipAddress,
                     factory: _ => new FixedWindowRateLimiterOptions
                     {
-                        // Allow 5 registration requests per 2 minutes.
+                        // Allow 5 registration requests per 3 minutes.
                         PermitLimit = 5,
                         Window = TimeSpan.FromMinutes(3),
                         QueueLimit = 0

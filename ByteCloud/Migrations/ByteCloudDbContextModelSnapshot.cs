@@ -17,7 +17,7 @@ namespace ByteCloud.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.12");
 
-            modelBuilder.Entity("ByteCloud.Models.User", b =>
+            modelBuilder.Entity("Users.Models.User", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -29,9 +29,6 @@ namespace ByteCloud.Migrations
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasColumnType("TEXT");
-
-                    b.Property<bool>("EmailVerified")
-                        .HasColumnType("INTEGER");
 
                     b.Property<DateTime?>("LastLoginAt")
                         .HasColumnType("TEXT");
@@ -54,6 +51,12 @@ namespace ByteCloud.Migrations
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Email")
+                        .IsUnique();
+
+                    b.HasIndex("Username")
+                        .IsUnique();
 
                     b.ToTable("Users");
                 });
