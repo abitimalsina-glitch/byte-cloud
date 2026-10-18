@@ -1,18 +1,21 @@
-// Imports the ByteCloud.Data namespace so we can use ByteCloudDbContext
 using ByteCloud.Data;
 using RateLimiting.Configuration;
-
-// Imports the Users.Models namespace so we can use User
 using Users.Models;
-
-// Imports the PasswordService namespace so we can use PasswordServices
 using PasswordService.Services;
-
-// Imports EF Core functionality such as UseSqlite()
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
+using Email.Services;
+using Resend;
 
 // Creates the ASP.NET Core application builder
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddResend(options =>
+{
+    options.ApiToken = builder.Configuration["Resend:ApiKey"]
+        ?? throw new InvalidOperationException(
+            "Resend API key is not configured.");
+});
 
 // Registers MVC controllers and Razor views with the application
 builder.Services.AddControllersWithViews();
@@ -23,9 +26,32 @@ builder.Services.AddDbContext<ByteCloudDbContext>(
     options => options.UseSqlite("Data Source=bytecloud.db")
 );
 
-// Registers PasswordServices with ASP.NET Core's dependency injection system
+// Registers ASP.NET Core Identity to manage users and their authentication data.
+builder.Services
+    .AddIdentityCore<User>(options =>
+    {
+        // Requires each account to have a unique email address.
+        options.User.RequireUniqueEmail = true;
+
+        // Configures Identity sign-in to require a confirmed email address.
+        options.SignIn.RequireConfirmedEmail = true;
+    })
+    // Registers role-management services using integer role IDs.
+    .AddRoles<IdentityRole<int>>()
+    // Connects Identity to the existing ByteCloudDbContext and SQLite database.
+    .AddEntityFrameworkStores<ByteCloudDbContext>()
+    // Registers SignInManager, which helps handle user sign-in.
+    .AddSignInManager()
+    // Registers built-in token providers for email confirmation and password resets.
+    .AddDefaultTokenProviders();
+
+// Registers PasswordServices with ASP.NET Core's dependency injection system.
+// Kept temporarily while the existing authentication code is being migrated to Identity.
 builder.Services.AddScoped<PasswordServices>();
 
+builder.Services.AddScoped<EmailService>();
+
+// Registers ByteCloud's existing rate-limiting policies.
 builder.Services.AddByteCloudRateLimiting();
 
 // Builds the configured ASP.NET Core application
@@ -47,7 +73,7 @@ app.UseHttpsRedirection();
 // Enables URL routing so requests can be matched to controllers and endpoints
 app.UseRouting();
 
-// Enables ASP.NET Core's built-in rate limiting middleware.
+// Enables ASP.NET Core's built-in rate-limiting middleware.
 app.UseRateLimiter();
 
 // Enables authorization checks for protected resources
@@ -60,8 +86,7 @@ app.MapStaticAssets();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}"
-)
-.WithStaticAssets();
+).WithStaticAssets();
 
 // Creates a simple health-check endpoint
 // Visiting / returns "Server is running"

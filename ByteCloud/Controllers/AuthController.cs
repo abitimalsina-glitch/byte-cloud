@@ -6,24 +6,31 @@ using Microsoft.AspNetCore.Mvc;
 using PasswordService.Services;
 using Normalizer.Services;
 using Microsoft.AspNetCore.RateLimiting;
-using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
+using Email.Services;
 
 [ApiController]
 [Route("/api/auth")]
 public class AuthController : ControllerBase
 {
-    private ByteCloudDbContext context;
-    private PasswordServices passwordServices;
+    private readonly UserManager<User> userManager;
+    private readonly EmailService emailService;
+    private readonly ByteCloudDbContext context;
+    private readonly PasswordServices passwordServices;
 
     // ASP.NET Core automatically provides these dependencies
     // through Dependency Injection when the controller is created.
     public AuthController(
         ByteCloudDbContext context,
-        PasswordServices passwordServices)
+        PasswordServices passwordServices,
+        UserManager<User> userManager,
+        EmailService emailService)
     {
         this.context = context;
         this.passwordServices = passwordServices;
+        this.userManager = userManager;
+        this.emailService = emailService;
     }
 
     [EnableRateLimiting("login")]
@@ -46,6 +53,11 @@ public class AuthController : ControllerBase
             return Unauthorized("Email or Password is incorrect");
         }
 
+        if (user.PasswordHash == null)
+        {
+            return Unauthorized("Email or Password is incorrect");
+        }
+
         // Verify the password provided by the user
         // against the password hash stored in the database.
         bool passwordCorrect = passwordServices.VerifyPassword(
@@ -62,10 +74,10 @@ public class AuthController : ControllerBase
         }
 
         // The credentials are correct.
-        // return the username.
+        // Return the username.
         // Later, this will be replaced with an authentication
-        // mechanism such as a cookie 
-        return Ok(user.Username);
+        // mechanism such as a cookie.
+        return Ok(user.UserName);
     }
 
     [EnableRateLimiting("register")]
@@ -76,65 +88,54 @@ public class AuthController : ControllerBase
         // duplicate check and for what gets stored.
         string email = AccountNormalizer.NormalizeEmail(request.Email);
 
-        // Check whether the requested email is already
-        // associated with an existing account.
-        User? existingUser = context.Users.FirstOrDefault(
-            user => user.Email == email
-        );
+        // Check whether the requested email is already associated
+        // with an existing account.
+        User? existingUser = await userManager.FindByEmailAsync(email);
 
-        // Prevent multiple accounts from using the same email.
         if (existingUser != null)
         {
             return Conflict("Email Already Registered");
         }
 
-        // Check whether the requested username is already
-        // being used by another account.
-        User? existingUsername = context.Users.FirstOrDefault(
-            user => user.Username == request.Username
+        // Check whether the requested username is already being used.
+        User? existingUsername = await userManager.FindByNameAsync(
+            request.Username
         );
 
-        // Prevent duplicate usernames.
         if (existingUsername != null)
         {
             return Conflict("Username Already Taken");
         }
 
-        // Create a new User object.
-        // The password is hashed before it is stored.
+        // Create the user. Identity handles password hashing.
         User user = new User
         {
             Email = email,
-            Username = request.Username,
-
-            // Never store the user's plain-text password.
-            PasswordHash = passwordServices.HashPassword(
-                new User(),
-                request.Password
-            ),
-
-            // Record when the account was created.
-            CreatedAt = DateTime.UtcNow,
-
-            // Give the new user a 10 GB storage limit.
-            StorageLimit = 10737418240,
-
-            // New users start with no stored files.
-            StorageUsed = 0
+            UserName = request.Username,
+            CreatedAt = DateTime.UtcNow
         };
 
-        // Add the new user to EF Core's change tracker.
-        context.Users.Add(user);
+        IdentityResult result = await userManager.CreateAsync(
+            user,
+            request.Password
+        );
 
-        try
+        if (!result.Succeeded)
         {
-            await context.SaveChangesAsync();
+            // Handle a possible duplicate or another Identity validation error.
+            if (result.Errors.Any(error =>
+                error.Code.Contains(
+                    "Duplicate",
+                    StringComparison.OrdinalIgnoreCase)))
+            {
+                return Conflict("Email or username already taken");
+            }
+
+            return BadRequest(
+                result.Errors.Select(error => error.Description)
+            );
         }
-        catch (DbUpdateException)
-        {
-            return Conflict("Email or username already taken");
-        }
-        
+
         return Ok("User Registered Successfully");
     }
 }
