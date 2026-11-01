@@ -1,13 +1,12 @@
-
 using Users.Models;
+using FileRecords.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace ByteCloud.Data;
 
-public class ByteCloudDbContext
-    : IdentityDbContext<User, IdentityRole<int>, int>
+public class ByteCloudDbContext: IdentityDbContext<User, IdentityRole<int>, int>
 {
     public ByteCloudDbContext(
         DbContextOptions<ByteCloudDbContext> options)
@@ -36,4 +35,6 @@ public class ByteCloudDbContext
             .HasIndex(user => user.Email)
             .IsUnique();
     }
+
+     public DbSet<FileRecord> Files => Set<FileRecord>();
 }

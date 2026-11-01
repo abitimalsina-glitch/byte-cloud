@@ -20,6 +20,7 @@ frontend/dist/
 .env.*
 !.env.example
 .local/
+audit/
 
 # macOS
 .DS_Store
